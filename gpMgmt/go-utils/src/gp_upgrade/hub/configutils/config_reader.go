@@ -2,7 +2,7 @@ package configutils
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"gp_upgrade/utils"
 
 	"github.com/pkg/errors"
 )
@@ -29,7 +29,8 @@ func (reader *Reader) Read() error {
 		return errors.New("Reader file location unknown")
 	}
 
-	contents, err := ioutil.ReadFile(reader.fileLocation)
+	contents, err := utils.System.ReadFile(reader.fileLocation)
+
 	if err != nil {
 		return errors.New(err.Error())
 	}
