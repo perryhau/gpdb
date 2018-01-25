@@ -11,3 +11,12 @@ gp_upgrade prepare start-hub
 gp_upgrade status upgrade | grep "PENDING - Configuration Check"
 
 gp_upgrade status upgrade | grep "PENDING - Install binaries on segments"
+gp_upgrade check seginstall
+sleep 2
+gp_upgrade status upgrade | grep "FAILED - Install binaries on segments"
+
+#TODO: scp the new-bindir to sdw1 etc. as though to do a seginstall
+
+gp_upgrade check seginstall
+sleep 2
+gp_upgrade status upgrade | grep "COMPLETE - Install binaries on segments"

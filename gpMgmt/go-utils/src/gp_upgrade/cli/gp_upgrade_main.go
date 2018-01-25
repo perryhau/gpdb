@@ -236,6 +236,29 @@ func main() {
 		},
 	}
 
+	var cmdCheckSubSeginstall = &cobra.Command{
+		Use:   "seginstall",
+		Short: "confirms that the new software is installed on all segments",
+		Long: "Running this command will validate that the new software is installed on all segments, " +
+			"and register successful or failed validation (available in `gp_upgrade status upgrade`)",
+		Run: func(cmd *cobra.Command, args []string) {
+			conn, connConfigErr := grpc.Dial("localhost:"+hubPort,
+				grpc.WithInsecure())
+			if connConfigErr != nil {
+				gpbackupUtils.GetLogger().Error(connConfigErr.Error())
+				os.Exit(1)
+			}
+			client := pb.NewCliToHubClient(conn)
+
+			err := commanders.NewSeginstallChecker(client).Execute()
+			if err != nil {
+				gpbackupUtils.GetLogger().Error(err.Error())
+				os.Exit(1)
+			}
+
+		},
+	}
+
 	var cmdVersion = &cobra.Command{
 		Use:   "version",
 		Short: "Version of gp_upgrade",
@@ -295,6 +318,7 @@ func main() {
 	cmdCheck.AddCommand(cmdCheckSubObjectCountCommand)
 	cmdCheck.AddCommand(cmdCheckSubDiskSpaceCommand)
 	cmdCheck.AddCommand(cmdCheckSubConfigCommand)
+	cmdCheck.AddCommand(cmdCheckSubSeginstall)
 
 	// upgrade subcommands
 	cmdUpgrade.AddCommand(cmdUpgradeSubConvertMaster)
