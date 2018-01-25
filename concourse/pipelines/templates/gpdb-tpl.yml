@@ -114,6 +114,7 @@ groups:
   - MM_gppkg
   - MU_check_centos
   - MM_gp_upgrade
+  - MM_gp_upgrade_bootstrap
   - gate_mm_end
 {% endif %}
 {% if "DPM" in test_sections %}
@@ -248,6 +249,7 @@ groups:
   - MM_gppkg
   - MU_check_centos
   - MM_gp_upgrade
+  - MM_gp_upgrade_bootstrap
   - gate_mm_end
 
 {% endif %}
@@ -2237,6 +2239,45 @@ jobs:
     file: gpdb_src/concourse/tasks/gpMgmt_gp_upgrade.yml
     image: centos-gpdb-dev-6
 
+- name: MM_gp_upgrade_bootstrap
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      tags: ["ccp"]
+      passed: [gate_mm_start]
+    - get: gpdb_binary
+      tags: ["ccp"]
+      resource: bin_gpdb_centos6
+      passed: [gate_mm_start]
+      trigger: [[ test_trigger ]]
+    - get: ccp_src
+      tags: ["ccp"]
+    - get: centos-gpdb-dev-6
+      tags: ["ccp"]
+  - put: terraform
+    tags: ["ccp"]
+    params:
+      <<: *ccp_default_params
+      vars:
+        <<: *ccp_default_vars
+        number_of_nodes: 3
+  - task: gen_cluster
+    tags: ["ccp"]
+    file: ccp_src/ci/tasks/gen_cluster.yml
+    params:
+      <<: *ccp_gen_cluster_default_params
+  - task: run_tests
+    tags: ["ccp"]
+    file: gpdb_src/concourse/tasks/gp_upgrade_bootstrap.yml
+    image: centos-gpdb-dev-6
+    on_success:
+      <<: *ccp_destroy
+    on_failure:
+      <<: *set_failed
+  ensure:
+    <<: *set_failed
+
+
 - name: gate_mm_end
   plan:
   - aggregate:
@@ -2251,6 +2292,7 @@ jobs:
       - MM_gppkg
       - MU_check_centos
       - MM_gp_upgrade
+      - MM_gp_upgrade_bootstrap
       trigger: true
 
 {% endif %}
@@ -2634,6 +2676,7 @@ jobs:
     - MM_gppkg
     - MU_check_centos
     - MM_gp_upgrade
+    - MM_gp_upgrade_bootstrap
     - DPM_gptransfer_43x_to_master
     - DPM_gptransfer
     - mpp_interconnect

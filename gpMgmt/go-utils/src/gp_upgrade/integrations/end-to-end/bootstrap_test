@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# bootstrap_test is characterized by the fact that it doesn't need a GPDB cluster up
+
+set -eox pipefail
+
+# maybe we need to cp into a new-bindir="$(dirname $GPHOME)/gpdb-new"
+# but maybe that needs to be done not by gpadmin user
+
+gp_upgrade prepare start-hub
+gp_upgrade status upgrade | grep "PENDING - Configuration Check"
+
+gp_upgrade status upgrade | grep "PENDING - Install binaries on segments"

@@ -10,7 +10,9 @@ clean distclean:
 	$(MAKE) -C src/gp_upgrade clean
 
 install:
-	$(MAKE) -C src/gp_upgrade $@
+# allow someone in src/gp_upgrade to run `make install` without dependencies
+# but include it here for the build system
+	$(MAKE) -C src/gp_upgrade dependencies $@
 
 # do nothing if global configutils is not enabled
 else
